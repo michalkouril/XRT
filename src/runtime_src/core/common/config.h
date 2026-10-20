@@ -29,7 +29,7 @@
 #  endif
 # endif
 #endif
-#ifdef __linux__
+#if defined(__linux__) || defined(__APPLE__)
 # ifdef XRT_CORE_COMMON_SOURCE
 #  define XRT_CORE_COMMON_EXPORT __attribute__ ((visibility("default")))
 # else
@@ -41,7 +41,7 @@
 # define XRT_CORE_COMMON_EXPORT
 #endif
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__APPLE__)
 # define XRT_CORE_UNUSED __attribute__((unused))
 # define XRT_LIKELY(x) __builtin_expect(!!(x), 1)
 # define XRT_UNLIKELY(x) __builtin_expect(!!(x), 0)

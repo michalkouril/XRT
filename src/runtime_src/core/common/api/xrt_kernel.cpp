@@ -78,7 +78,7 @@
 #include <utility>
 using namespace std::chrono_literals;
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__APPLE__)
 #pragma GCC diagnostic ignored "-Woverloaded-virtual"
 #endif
 
@@ -4518,7 +4518,11 @@ copy_bo_with_kdma(const std::shared_ptr<xrt_core::device>& core_device,
                   buffer_handle* dst_bo, size_t dst_offset,
                   buffer_handle* src_bo, size_t src_offset)
 {
-#ifndef _WIN32
+#if defined(__APPLE__)
+  // The macOS shim has no KDMA/ERT: make xrt::bo::copy fall back to a host
+  // copy instead of submitting a command it cannot run.
+  throw std::runtime_error("KDMA not supported on macOS");
+#elif !defined(_WIN32)
   if (is_sw_emulation())
     throw std::runtime_error("KDMA not support in software emulation");
 

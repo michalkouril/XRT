@@ -5,6 +5,8 @@
 
 #ifdef _WIN32
 # include "core/common/detail/windows/trace_init.h"
+#elif defined(__APPLE__)
+# include "core/common/detail/darwin/trace_init.h"
 #else
 # include "core/common/detail/linux/trace_init.h"
 #endif

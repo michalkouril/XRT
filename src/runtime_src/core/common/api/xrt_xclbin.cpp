@@ -39,6 +39,8 @@
 #ifdef _WIN32
 # include "xrt/detail/windows/uuid.h"
 # pragma warning(disable : 4244 4267)
+#elif defined(__APPLE__)
+# include <uuid/uuid.h>
 #else
 # include <linux/uuid.h>
 #endif
@@ -1087,6 +1089,12 @@ class xclbin_repository_impl
     std::vector<sfs::path> xclbin_paths;
 
     for (const auto& path : dirs) {
+      // Default search paths include per-user data directories that
+      // usually do not exist; iterating one would throw.
+      std::error_code ec;
+      if (!sfs::is_directory(path, ec))
+        continue;
+
       // Iterate over all files in the directory and collect all xclbin files
       sfs::directory_iterator p{path};
       sfs::directory_iterator end;

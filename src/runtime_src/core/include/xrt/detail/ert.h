@@ -1343,7 +1343,7 @@ get_ert_ctx_health_data_v1(const struct ert_packet* pkt)
   return NULL;
 }
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__APPLE__)
 #define P2ROUNDUP(x, align)     (-(-(x) & -(align)))
 static inline struct cu_cmd_state_timestamps *
 ert_start_kernel_timestamps(struct ert_start_kernel_cmd *pkt)

@@ -35,6 +35,8 @@ if (NOT XRT_EDGE)
   # common file
   if (WIN32)
     include(CMake/nativeWin.cmake)
+  elseif (APPLE)
+    include(CMake/nativeDarwin.cmake)
   else()
     include(CMake/nativeLnx.cmake)
   endif()

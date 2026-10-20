@@ -15,7 +15,7 @@
 #include <filesystem>
 #include <string_view>
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__APPLE__)
 # include <unistd.h>
 #endif
 
@@ -202,6 +202,9 @@ module_path(const std::string& module)
   auto path = xilinx_xrt();
 #ifdef _WIN32
   path /= module + ".dll";
+#elif defined(__APPLE__)
+  path /= XRT_LIB_DIR;
+  path /= "xrt/module/lib" + module + "." + XRT_VERSION_MAJOR + ".dylib";
 #else
   path /= XRT_LIB_DIR;
   path /= "xrt/module/lib" + module + ".so." + XRT_VERSION_MAJOR;
@@ -233,6 +236,9 @@ shim_path()
 
 #ifdef _WIN32
   path /= name + ".dll";
+#elif defined(__APPLE__)
+  path /= XRT_LIB_DIR;
+  path /= "lib" + name + "." + XRT_VERSION_MAJOR + ".dylib";
 #else
   path /= XRT_LIB_DIR;
   path /= "lib" + name + ".so." + XRT_VERSION_MAJOR;
@@ -252,7 +258,11 @@ driver_plugin_paths()
 
   // All driver plug-ins are in the same directory as shim .so and with below prefix and suffix.
   const std::string pre = "libxrt_driver_";
+#ifdef __APPLE__
+  const std::string suf = std::string(".") + XRT_VERSION_MAJOR + ".dylib";
+#else
   const std::string suf = std::string(".so.") + XRT_VERSION_MAJOR;
+#endif
   while (p != sfs::directory_iterator{}) {
     const auto name = p->path().filename().string();
     if ((name.size() > (pre.size() + suf.size())) &&

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleDevelopmentRegion</key><string>en</string>
+  <key>CFBundleExecutable</key><string>$(EXECUTABLE_NAME)</string>
+  <key>CFBundleIdentifier</key><string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+  <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
+  <key>CFBundleName</key><string>$(PRODUCT_NAME)</string>
+  <key>CFBundlePackageType</key><string>DEXT</string>
+  <key>CFBundleShortVersionString</key><string>0.1</string>
+  <key>CFBundleVersion</key><string>101</string>
+  <key>OSBundleUsageDescription</key><string>XRT driver for Alveo user and management functions (development).</string>
+  <key>IOKitPersonalities</key>
+  <dict>
+    <key>XrtUser</key>
+    <dict>
+      <key>CFBundleIdentifier</key><string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+      <key>CFBundleIdentifierKernel</key><string>com.apple.kpi.iokit</string>
+      <key>IOClass</key><string>IOUserService</string>
+      <key>IOProviderClass</key><string>IOPCIDevice</string>
+      <key>IOUserClass</key><string>XrtUser</string>
+      <key>IOUserServerName</key><string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+      <key>IOPCITunnelCompatible</key><true/>
+      <!-- device<<16 | vendor: user (PF1) and management (PF0) functions of the XDMA shells in XRT's devices.h -->
+      <key>IOPCIMatch</key><string>0x6a9010ee 0x500110ee 0x500510ee 0x502110ee 0x6a8f10ee 0x500010ee 0x500410ee 0x502010ee 0x788f10ee</string>
+      <!-- Two user client classes. The default one (IOServiceOpen type 0) carries
+           everything except flash, and is open to any process because the dext
+           holds allow-any-userclient-access. The flash one (type 1) carries the
+           SPI selectors and NOTHING else, and IOUserClientEntitlements requires
+           the opening process to be signed with org.xrtmac.flash-access set to
+           true. That matters because the SPI selectors can erase the boot flash,
+           including the factory image, which is not recoverable without JTAG:
+           reaching them should take more than being able to run a program. -->
+      <key>UserClientProperties</key>
+      <dict>
+        <key>IOClass</key><string>IOUserUserClient</string>
+        <key>IOUserClass</key><string>XrtUserClient</string>
+      </dict>
+      <key>FlashUserClientProperties</key>
+      <dict>
+        <key>IOClass</key><string>IOUserUserClient</string>
+        <key>IOUserClass</key><string>XrtFlashClient</string>
+        <key>IOUserClientEntitlements</key><string>org.xrtmac.flash-access</string>
+      </dict>
+    </dict>
+  </dict>
+</dict>
+</plist>

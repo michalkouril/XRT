@@ -115,7 +115,9 @@ target_link_libraries(${XBUTIL2_NAME}
   ${Boost_PROGRAM_OPTIONS_LIBRARY}
   )
 
-if (NOT WIN32)
+if (APPLE)
+  target_link_libraries(${XBUTIL2_NAME} PRIVATE pthread)
+elseif (NOT WIN32)
   target_link_libraries(${XBUTIL2_NAME} PRIVATE pthread uuid dl)
 else()
   if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")

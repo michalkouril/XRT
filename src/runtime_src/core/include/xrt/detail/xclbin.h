@@ -7,7 +7,7 @@
 #ifndef INCLUDE_XRT_DETAIL_XCLBIN_H_
 #define INCLUDE_XRT_DETAIL_XCLBIN_H_
 
-#if defined(__linux__)
+#if defined(__linux__) || defined(__APPLE__)
 # if defined(__KERNEL__)
 #  include <linux/types.h>
 #  include <linux/uuid.h>
@@ -50,7 +50,7 @@ typedef uuid_le xuid_t;
 # else
 typedef uuid_le xuid_t;
 # endif
-#elif defined(__linux__) && !defined(__KERNEL__)
+#elif (defined(__linux__) || defined(__APPLE__)) && !defined(__KERNEL__)
 typedef uuid_t xuid_t;
 #elif defined(_WIN32) && defined(_KERNEL_MODE)
 typedef GUID xuid_t;

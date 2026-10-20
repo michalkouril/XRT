@@ -6,6 +6,12 @@ include_directories(
   ${XRT_SOURCE_DIR}/include/1_2
 )
 
+if (APPLE)
+  # Keg-only Homebrew OpenCL headers, found in nativeDarwin.cmake. XRT's own
+  # include/1_2/CL extension headers stay first.
+  include_directories(AFTER ${XRT_MACOS_CL_INCLUDE} ${XRT_MACOS_OCL_ICD_INCLUDE})
+endif()
+
 set(XRT_XOCL_API_DIR       "${CMAKE_CURRENT_SOURCE_DIR}/api")
 set(XRT_XOCL_CORE_DIR      "${CMAKE_CURRENT_SOURCE_DIR}/core")
 set(XRT_XOCL_XCLBIN_DIR    "${CMAKE_CURRENT_SOURCE_DIR}/xclbin")
@@ -73,9 +79,11 @@ else ()
 add_library(xilinxopencl SHARED $<TARGET_OBJECTS:xocl>)
 add_library(xilinxopencl_static STATIC $<TARGET_OBJECTS:xocl>)
 
-# Attach to the user's linker flags
+# Attach to the user's linker flags (GNU ld only)
+if (NOT APPLE)
 set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-Bsymbolic")
 set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,defs")
+endif()
 
 set_target_properties(xilinxopencl PROPERTIES
   LINKER_LANGUAGE CXX
@@ -83,6 +91,10 @@ set_target_properties(xilinxopencl PROPERTIES
   SOVERSION ${XRT_SOVERSION}
   )
 
+if (APPLE)
+  # dlopen and uuid live in libSystem
+  target_link_libraries(xilinxopencl PRIVATE xrt++ xrt_coreutil pthread)
+else()
 target_link_libraries(xilinxopencl
   PRIVATE
   xrt++
@@ -91,6 +103,7 @@ target_link_libraries(xilinxopencl
   pthread
   uuid
   )
+endif()
 
   # On linux use xrt_coreutil.a
   set_target_properties(xilinxopencl_static PROPERTIES OUTPUT_NAME "xilinxopencl")

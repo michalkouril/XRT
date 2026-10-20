@@ -51,7 +51,7 @@
 # define XCL_DRIVER_DLLHIDDEN
 #endif
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__APPLE__)
 # define XCL_DRIVER_DLLESPEC __attribute__((visibility("default")))
 # define XCL_DRIVER_DLLHIDDEN __attribute__((visibility("hidden")))
 #endif

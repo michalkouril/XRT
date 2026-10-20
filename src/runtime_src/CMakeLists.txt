@@ -45,7 +45,11 @@ if (NOT XRT_EDGE)
 endif()
 
 xrt_add_subdirectory(tools/xclbinutil)
-xrt_add_subdirectory(xocl)
+if (APPLE AND NOT XRT_MACOS_OPENCL)
+  message("-- macOS: skipping OpenCL layer (xocl), headers not found")
+else()
+  xrt_add_subdirectory(xocl)
+endif()
 xrt_add_subdirectory(xrt)
 
 if (XRT_ALVEO)
@@ -69,11 +73,17 @@ if (XDP_VE2_BUILD_CMAKE STREQUAL "yes")
   set(AIEBU_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/core/common/aiebu)
 endif()
 
-xrt_add_subdirectory(xdp)
+if (APPLE)
+  # XDP profiling plugins depend on the Linux shim target (xrt_core) and on
+  # hw_emu; neither exists on macOS yet. GNU-ld only flags are skipped too.
+  message("-- macOS: skipping xdp profiling plugins")
+else()
+  xrt_add_subdirectory(xdp)
 
-# Attach to the user's linker flags
-set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-Bsymbolic")
-set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,defs")
+  # Attach to the user's linker flags
+  set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-Bsymbolic")
+  set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,defs")
+endif()
 
 xrt_add_subdirectory(core)
 
@@ -99,7 +109,11 @@ else()
   endif()
 
   # Build Subdirectories
+  if (APPLE AND NOT XRT_MACOS_OPENCL)
+  message("-- macOS: skipping OpenCL layer (xocl), headers not found")
+else()
   xrt_add_subdirectory(xocl)
+endif()
   xrt_add_subdirectory(xrt)
   xrt_add_subdirectory(tools/xclbinutil)
   xrt_add_subdirectory(xdp)

@@ -193,7 +193,9 @@ ReportPlatform::getPropertyTree20202( const xrt_core::device * device,
 
   Flasher f(device->get_device_id());
 
-  BoardInfo info;
+  // Value-initialize: getBoardInfo() returns early without filling
+  // anything when board info is unavailable (e.g. shells without XMC).
+  BoardInfo info{};
   f.getBoardInfo(info);
   //create information tree for a device
   pt_platform.put("bdf", xrt_core::query::pcie_bdf::to_string(xrt_core::device_query<xrt_core::query::pcie_bdf>(device)));

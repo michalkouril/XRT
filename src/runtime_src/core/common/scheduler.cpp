@@ -17,7 +17,7 @@
 #include <iostream>
 #include <gsl/pointers>
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__APPLE__)
 #include <sys/mman.h>
 #endif
 

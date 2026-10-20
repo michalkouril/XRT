@@ -31,10 +31,24 @@ firmwareImage::firmwareImage(const char *file) :
     in.seekg(0);
 
     // For non-dsabin file, the entire file is the image.
-    mBuf = new char[bufsize];
-    in.seekg(0);
-    in.read(mBuf, bufsize);
-    this->rdbuf()->pubsetbuf(mBuf, bufsize);
+    //
+    // This used to allocate its own buffer and install it with
+    // rdbuf()->pubsetbuf(). For a std::stringbuf that call is
+    // IMPLEMENTATION-DEFINED: libstdc++ adopts the buffer, libc++ ignores it. On
+    // macOS the stream therefore stayed empty, parseMCS found 0 records, and
+    // xbflash printed "Erasing flash"/"Programming flash" and exited 0 having sent
+    // no command at all - a silent no-op, which is a worse failure than an error.
+    // str() is specified and behaves the same on both.
+    std::string data(static_cast<size_t>(bufsize), '\0');
+    if (bufsize > 0)
+        in.read(&data[0], bufsize);
+    if (in.gcount() != bufsize) {
+        this->setstate(failbit);
+        std::cout << "Short read on " << file << ": got " << in.gcount()
+                  << " of " << bufsize << " bytes" << std::endl;
+        return;
+    }
+    this->str(data);
 }
 
 firmwareImage::~firmwareImage()

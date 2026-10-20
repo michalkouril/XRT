@@ -5,6 +5,8 @@
 
 #ifdef _WIN32
 # include "core/common/detail/windows/utils.h"
+#elif defined(__APPLE__)
+# include "core/common/detail/darwin/utils.h"
 #else
 # include "core/common/detail/linux/utils.h"
 #endif

@@ -100,6 +100,8 @@ target_link_libraries(${XBMGMT2_NAME}
 # Add the supporting libraries
 if(WIN32)
   target_link_libraries(${XBMGMT2_NAME} PRIVATE ws2_32)
+elseif(APPLE)
+  target_link_libraries(${XBMGMT2_NAME} PRIVATE pthread)
 else()
   target_link_libraries(${XBMGMT2_NAME} PRIVATE pthread uuid dl)
 endif()

@@ -26,7 +26,7 @@
 #  define XRT_EXPORT __declspec(dllimport)
 # endif
 #endif
-#ifdef __linux__
+#if defined(__linux__) || defined(__APPLE__)
 # ifdef XRT_SOURCE
 #  define XRT_EXPORT __attribute__ ((visibility("default")))
 # else
@@ -38,7 +38,7 @@
 # define XRT_EXPORT
 #endif
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__APPLE__)
 # define XRT_UNUSED __attribute__((unused))
 #endif
 

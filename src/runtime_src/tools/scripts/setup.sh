@@ -9,11 +9,17 @@
 # be sourced from that location
 
 # Check OS version requirement
+if [ "$(uname)" = "Darwin" ]; then
+    # macOS has no /etc/os-release
+    OSDIST=darwin
+    OSREL=$(sw_vers -productVersion | awk -F. '{print $1*100+$2}')
+else
 OSDIST=$(awk -F= '/^ID=/{print $2}' /etc/os-release)
 if [ "$OSDIST" = "centos" ]; then
     OSREL=$(awk '{print $4}' /etc/redhat-release | tr -d '"' | awk -F. '{print $1*100+$2}')
 else
     OSREL=$(awk -F= '/^VERSION_ID=/{print $2}' /etc/os-release | tr -d '"' | awk -F. '{print $1*100+$2}')
+fi
 fi
 
 if [ "$OSDIST" = "ubuntu" ] && [ "$OSREL" -lt 1604 ]; then

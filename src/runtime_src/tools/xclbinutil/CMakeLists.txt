@@ -113,7 +113,9 @@ if (ENABLE_ASAN)
 endif()
 
 # Signing xclbin images currently is not support on windows
-if(NOT WIN32)
+if(APPLE)
+  target_link_libraries(${XCLBINUTIL_NAME} PRIVATE OpenSSL::Crypto)
+elseif(NOT WIN32)
   target_link_libraries(${XCLBINUTIL_NAME} PRIVATE crypto)
 endif()
 

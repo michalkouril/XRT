@@ -24,6 +24,10 @@
 # pragma warning( disable : 4189 )
 #define be32toh ntohl
 #endif
+#ifdef __APPLE__
+# include <arpa/inet.h>
+# define be32toh ntohl
+#endif
 
 #define hex_digit "([0-9a-fA-F]+)"
 

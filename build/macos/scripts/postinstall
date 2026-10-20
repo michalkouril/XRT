@@ -1,0 +1,13 @@
+#!/bin/bash
+# Activate (or upgrade) the xrt_user driver extension. First-time activation
+# waits for approval in System Settings; an upgrade replaces the running one.
+APP=/Applications/XrtLoader.app/Contents/MacOS/XrtLoader
+OLD=$(pgrep -f "org.xrtmac.XrtUser.dext/org.xrtmac.XrtUser" || true)
+"$APP" activate || true
+# A running dext can hang in "terminating for upgrade": stop the old one so
+# the kernel matches the card with the new version.
+if [ -n "$OLD" ]; then
+  sleep 2
+  for p in $OLD; do kill "$p" 2>/dev/null || true; done
+fi
+exit 0

@@ -44,13 +44,21 @@ private:
   uint16_t dev =              INVALID_ID;
   uint16_t func =             INVALID_ID;
 
-  int map_usr_bar(void);
   std::mutex lock;
-  char *user_bar_map = reinterpret_cast<char *>(MAP_FAILED);
   int user_bar_index;
-  size_t user_bar_size;
   size_t flash_offset;
   std::string flash_type_str;
+#ifdef __APPLE__
+  // There is no BAR to map here. The QSPI controller is reached one register at
+  // a time through the dext (XRT_DEXT_SPI_REG), which holds the connection and
+  // supplies the block's base address itself, so offsets that cross this class
+  // are offsets within the controller - not within a BAR. See pcidev_macos.cpp.
+  unsigned int conn = 0;
+#else
+  int map_usr_bar(void);
+  char *user_bar_map = reinterpret_cast<char *>(MAP_FAILED);
+  size_t user_bar_size;
+#endif
 };
 
 } // namespace pcidev

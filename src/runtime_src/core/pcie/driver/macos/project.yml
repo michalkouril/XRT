@@ -1,0 +1,48 @@
+name: XrtMac
+options:
+  bundleIdPrefix: org.xrtmac
+settings:
+  base:
+    CODE_SIGN_IDENTITY: "-"
+    CODE_SIGN_STYLE: Manual
+    DEVELOPMENT_TEAM: ""
+    ENABLE_HARDENED_RUNTIME: NO
+targets:
+  XrtUser:
+    type: driver-extension
+    platform: macOS
+    sources:
+      - path: XrtUser
+    settings:
+      base:
+        PRODUCT_NAME: org.xrtmac.XrtUser
+        PRODUCT_BUNDLE_IDENTIFIER: org.xrtmac.XrtUser
+        INFOPLIST_FILE: XrtUser/Info.plist
+        CODE_SIGN_ENTITLEMENTS: XrtUser/XrtUser.entitlements
+        SDKROOT: driverkit
+        SUPPORTED_PLATFORMS: driverkit
+        DRIVERKIT_DEPLOYMENT_TARGET: "24.0"
+        # DriverKit processes on Apple silicon run as arm64e only
+        ARCHS: arm64e
+        GENERATE_INFOPLIST_FILE: NO
+        OTHER_LDFLAGS: "-framework PCIDriverKit"
+  XrtLoader:
+    type: application
+    platform: macOS
+    deploymentTarget: "15.0"
+    sources:
+      - path: Loader
+    dependencies:
+      - target: XrtUser
+        embed: true
+        codeSign: true
+        copy:
+          destination: plugins
+          subpath: ../Library/SystemExtensions
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: org.xrtmac.XrtLoader
+        INFOPLIST_FILE: Loader/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Loader/Loader.entitlements
+        GENERATE_INFOPLIST_FILE: NO
+        ARCHS: arm64

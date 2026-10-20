@@ -26,7 +26,7 @@ namespace xrt_core {
 inline int
 posix_memalign(void **memptr, size_t alignment, size_t size)
 {
-#if defined(__linux__)
+#if defined(__linux__) || defined(__APPLE__)
   return ::posix_memalign(memptr,alignment,size);
 #elif defined(_WIN32)
   // this is not good, _aligned_malloc requires _aligned_free
@@ -77,6 +77,9 @@ aligned_alloc(size_t align, size_t size)
 #if defined(_WIN32)
   return aligned_ptr_t<MyType>(reinterpret_cast<MyType*>(_aligned_malloc(size, align)));
 #else
+  // C11 aligned_alloc requires size to be a multiple of align. glibc
+  // tolerates other sizes but macOS returns nullptr, so round up.
+  size = (size + align - 1) & ~(align - 1);
   return aligned_ptr_t<MyType>(reinterpret_cast<MyType*>(::aligned_alloc(align, size)));
 #endif
 }

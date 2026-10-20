@@ -5,6 +5,8 @@
 
 #ifdef _WIN32
 # include "core/common/detail/windows/xilinx_xrt.h"
+#elif defined(__APPLE__)
+# include "core/common/detail/darwin/xilinx_xrt.h"
 #else
 # include "core/common/detail/linux/xilinx_xrt.h"
 #endif

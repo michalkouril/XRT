@@ -1,3 +1,4 @@
+#ifndef __APPLE__
 /**
  * Copyright (C) 2020 Xilinx, Inc
  *
@@ -226,3 +227,4 @@ pcieBarWrite(uint64_t offset, const void* buf, uint64_t len)
 }
 
 } // namespace pcidev
+#endif // !__APPLE__

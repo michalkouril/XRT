@@ -9,12 +9,20 @@ endif()
 
 message("-- Preparing OpenCL ICD ${ICD_FILE_NAME}")
 
+if (APPLE)
+  # The ICD file holds the library path; Homebrew's ICD loaders read
+  # vendors from <brew prefix>/etc/OpenCL/vendors.
+  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${ICD_FILE_NAME}
+    "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libxilinxopencl.dylib\n")
+  set(OCL_ICD_INSTALL_PREFIX "/opt/homebrew/etc/OpenCL/vendors")
+else()
 configure_file (
   "${XRT_SOURCE_DIR}/CMake/config/xilinx.icd.in"
   ${ICD_FILE_NAME}
   )
 
 set(OCL_ICD_INSTALL_PREFIX "/etc/OpenCL/vendors")
+endif()
 
 install (FILES ${CMAKE_CURRENT_BINARY_DIR}/${ICD_FILE_NAME}
   DESTINATION ${OCL_ICD_INSTALL_PREFIX}

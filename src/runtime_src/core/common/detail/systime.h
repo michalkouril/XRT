@@ -5,6 +5,8 @@
 
 #ifdef _WIN32
 # include "core/common/detail/windows/systime.h"
+#elif defined(__APPLE__)
+# include "core/common/detail/darwin/systime.h"
 #else
 # include "core/common/detail/linux/systime.h"
 #endif

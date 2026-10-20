@@ -1,0 +1,529 @@
+{
+   "--comment--partition_info" : "The partition_info subkeys printed out to the XRT user during partition query operations. These keys are intended to provide descriptive information to the XRT user about the general features of the partition.",
+   "partition_info" : {
+      "installation" : {
+         "installed_package_dir" : "/opt/xilinx/firmware/u50/gen3x16-xdma/base",
+         "installed_package_name" : "xilinx-u50-gen3x16-xdma-base",
+         "installed_package_release" : "3499627",
+         "installed_package_version" : "5"
+      },
+      "partition_card" : "u50",
+      "partition_family" : "gen3x16-xdma",
+      "partition_features" : {
+         "pcie" : {
+            "device_ids" : {
+               "5020" : {
+                  "role" : "management_pf"
+               },
+               "5021" : {
+                  "role" : "user_pf"
+               }
+            },
+            "extended_capabilities" : "enabled",
+            "max_link_speed" : "gen3x16",
+            "subsystem_id" : "000e",
+            "vendor_id" : "10ee"
+         }
+      },
+      "partition_identifiers" : {
+         "interface_uuids" : {
+            "16e2362f82d2feab35529da27134b76d" : {
+               "type" : "exposed"
+            }
+         },
+         "logic_uuid" : "4465409525b4c06aec6d0b479d3febe8"
+      },
+      "partition_name" : "base",
+      "partition_type" : "base",
+      "partition_vendor" : "xilinx"
+   },
+   "partition_metadata" : {
+      "addressable_endpoints" : {
+         "ep_bar_layout_mgmt_00" : {
+            "offset" : "0x0000000001F08000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x0",
+            "range" : "0x0000000000001000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:bar_layout:1.0"
+         },
+         "ep_bar_layout_user_00" : {
+            "offset" : "0x0000000001F10000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x1",
+            "range" : "0x0000000000001000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:bar_layout:1.0"
+         },
+         "ep_c2h_data_00" : {
+            "offset" : "0x0000000000000000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x1",
+            "range" : "0x0000000400000000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:memory:1.0"
+         },
+         "ep_card_flash_program_00" : {
+            "interrupt_alias" : [
+               "interrupt_card_flash_program_00"
+            ],
+            "offset" : "0x0000000001F06000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x0",
+            "range" : "0x0000000000001000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:axi_quad_spi:1.0"
+         },
+         "ep_cmc_firmware_mem_00" : {
+            "firmware" : {
+               "firmware_branch_name" : "u50",
+               "firmware_product_name" : "cmc",
+               "firmware_version_major" : "1",
+               "firmware_version_minor" : "0"
+            },
+            "offset" : "0x0000000001E20000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x0",
+            "range" : "0x0000000000020000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:axi_bram_ctrl:1.0"
+         },
+         "ep_cmc_mutex_00" : {
+            "offset" : "0x0000000001E02000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x0",
+            "range" : "0x0000000000001000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:gpio_mutex:1.0"
+         },
+         "ep_cmc_regmap_00" : {
+            "firmware" : {
+               "firmware_branch_name" : "u50",
+               "firmware_product_name" : "sc-fw",
+               "firmware_version_major" : "5"
+            },
+            "offset" : "0x0000000001E08000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x0",
+            "range" : "0x0000000000002000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:axi_bram_ctrl:1.0"
+         },
+         "ep_cmc_reset_00" : {
+            "offset" : "0x0000000001E01000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x0",
+            "range" : "0x0000000000001000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:gpio_aresetn:1.0"
+         },
+         "ep_ddr_mem_calib_00" : {
+            "offset" : "0x0000000000063000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x0",
+            "range" : "0x0000000000001000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:cmp_ddr_calib:1.0"
+         },
+         "ep_debug_bscan_mgmt_00" : {
+            "offset" : "0x0000000001E90000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x0",
+            "range" : "0x0000000000010000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:debug_bridge:1.0"
+         },
+         "ep_debug_uptime_counters_00" : {
+            "offset" : "0x0000000001F0C000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x0",
+            "range" : "0x0000000000001000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:debug_uptime_counters:1.0"
+         },
+         "ep_ert_command_queue_user_00" : {
+            "offset" : "0x0000008000000000",
+            "pcie_base_address_register" : "0x4",
+            "pcie_physical_function" : "0x1",
+            "range" : "0x0000000000010000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:ert_command_queue:1.0"
+         },
+         "ep_ert_config_00" : {
+            "offset" : "0x0000000000004000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x1",
+            "range" : "0x0000000000001000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:gpio_ert_config:1.0"
+         },
+         "ep_ert_debug_uart_00" : {
+            "interrupt_alias" : [
+               "interrupt_ert_debug_uart_00"
+            ],
+            "offset" : "0x0000000000003000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x0",
+            "range" : "0x0000000000001000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:axi_uartlite:1.0"
+         },
+         "ep_ert_firmware_mem_00" : {
+            "firmware" : {
+               "firmware_branch_name" : "v30",
+               "firmware_product_name" : "ert",
+               "firmware_version_major" : "3"
+            },
+            "offset" : "0x0000000000010000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x0",
+            "range" : "0x0000000000008000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:axi_bram_ctrl:1.0"
+         },
+         "ep_ert_reset_00" : {
+            "offset" : "0x0000000000001000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x0",
+            "range" : "0x0000000000001000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:gpio_aresetn:1.0"
+         },
+         "ep_ert_sched_00" : {
+            "interrupt_alias" : [
+               "interrupt_cu_bank_00",
+               "interrupt_cu_bank_01",
+               "interrupt_cu_bank_02",
+               "interrupt_cu_bank_03"
+            ],
+            "offset" : "0x0000000000010000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x1",
+            "range" : "0x0000000000010000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:shell_utils_embedded_scheduler_hw:1.0"
+         },
+         "ep_firewall_blp_ctrl_mgmt_00" : {
+            "interrupt_alias" : [
+               "interrupt_firewall_00"
+            ],
+            "offset" : "0x0000000001F02000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x0",
+            "range" : "0x0000000000001000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:axi_firewall:1.1"
+         },
+         "ep_firewall_blp_ctrl_user_00" : {
+            "interrupt_alias" : [
+               "interrupt_firewall_00"
+            ],
+            "offset" : "0x0000000001F03000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x0",
+            "range" : "0x0000000000001000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:axi_firewall:1.1"
+         },
+         "ep_firewall_ctrl_debug_00" : {
+            "interrupt_alias" : [
+               "interrupt_firewall_00"
+            ],
+            "offset" : "0x0000000000044000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x0",
+            "range" : "0x0000000000001000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:axi_firewall:1.1"
+         },
+         "ep_firewall_ctrl_mgmt_00" : {
+            "interrupt_alias" : [
+               "interrupt_firewall_00"
+            ],
+            "offset" : "0x0000000000042000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x0",
+            "range" : "0x0000000000001000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:axi_firewall:1.1"
+         },
+         "ep_firewall_ctrl_user_00" : {
+            "interrupt_alias" : [
+               "interrupt_firewall_00"
+            ],
+            "offset" : "0x0000000000043000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x0",
+            "range" : "0x0000000000001000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:axi_firewall:1.1"
+         },
+         "ep_firewall_data_c2h_00" : {
+            "interrupt_alias" : [
+               "interrupt_firewall_00"
+            ],
+            "offset" : "0x0000000000048000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x0",
+            "range" : "0x0000000000001000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:axi_firewall:1.1"
+         },
+         "ep_firewall_data_h2c_00" : {
+            "interrupt_alias" : [
+               "interrupt_firewall_00"
+            ],
+            "offset" : "0x0000000000045000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x0",
+            "range" : "0x0000000000001000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:axi_firewall:1.1"
+         },
+         "ep_fpga_configuration_00" : {
+            "interrupt_alias" : [
+               "interrupt_fpga_configuration_00"
+            ],
+            "offset" : "0x0000000001E88000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x0",
+            "range" : "0x0000000000008000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:axi_hwicap:1.0"
+         },
+         "ep_icap_arb_00" : {
+            "offset" : "0x0000000001E81000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x0",
+            "range" : "0x0000000000001000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:icap_arb:1.0"
+         },
+         "ep_icap_reset_00" : {
+            "offset" : "0x0000000001F07000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x0",
+            "range" : "0x0000000000001000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:gpio_aresetn:1.0"
+         },
+         "ep_intc_aggregated_mgmt_00" : {
+            "interrupt_alias" : [
+               "interrupt_aggregated_mgmt_00"
+            ],
+            "interrupt_mapping" : {
+               "interrupt_card_flash_program_00" : [
+                  "2",
+                  "2"
+               ],
+               "interrupt_cmc_00" : [
+                  "3",
+                  "3"
+               ],
+               "interrupt_ert_00" : [
+                  "4",
+                  "4"
+               ],
+               "interrupt_firewall_00" : [
+                  "0",
+                  "0"
+               ],
+               "interrupt_fpga_configuration_00" : [
+                  "1",
+                  "1"
+               ]
+            },
+            "offset" : "0x0000000000081000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x0",
+            "range" : "0x0000000000001000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:axi_intc:1.0"
+         },
+         "ep_intc_cmc_00" : {
+            "interrupt_alias" : [
+               "interrupt_cmc_00"
+            ],
+            "interrupt_mapping" : {
+               "interrupt_cmc_watchdog_timeout_00" : [
+                  "0",
+                  "0"
+               ]
+            },
+            "offset" : "0x0000000001E03000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x0",
+            "range" : "0x0000000000001000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:axi_intc:1.0"
+         },
+         "ep_intc_cu_00" : {
+            "interrupt_alias" : [
+               "interrupt_cu_bank_00"
+            ],
+            "offset" : "0x0000000000000000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x1",
+            "range" : "0x0000000000001000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:axi_intc:1.0"
+         },
+         "ep_intc_cu_01" : {
+            "interrupt_alias" : [
+               "interrupt_cu_bank_01"
+            ],
+            "offset" : "0x0000000000001000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x1",
+            "range" : "0x0000000000001000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:axi_intc:1.0"
+         },
+         "ep_intc_cu_02" : {
+            "interrupt_alias" : [
+               "interrupt_cu_bank_02"
+            ],
+            "offset" : "0x0000000000002000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x1",
+            "range" : "0x0000000000001000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:axi_intc:1.0"
+         },
+         "ep_intc_cu_03" : {
+            "interrupt_alias" : [
+               "interrupt_cu_bank_03"
+            ],
+            "offset" : "0x0000000000003000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x1",
+            "range" : "0x0000000000001000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:axi_intc:1.0"
+         },
+         "ep_intc_ert_00" : {
+            "interrupt_alias" : [
+               "interrupt_ert_00"
+            ],
+            "interrupt_mapping" : {
+               "interrupt_ert_debug_uart_00" : [
+                  "1",
+                  "1"
+               ],
+               "interrupt_ert_watchdog_timeout_00" : [
+                  "0",
+                  "0"
+               ]
+            },
+            "offset" : "0x0000000000002000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x0",
+            "range" : "0x0000000000001000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:axi_intc:1.0"
+         },
+         "ep_mailbox_mgmt_00" : {
+            "interrupt_alias" : [
+               "interrupt_mailbox_user_to_mgmt_00"
+            ],
+            "offset" : "0x0000000001F10000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x0",
+            "range" : "0x0000000000010000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:mailbox:1.0"
+         },
+         "ep_mailbox_user_00" : {
+            "interrupt_alias" : [
+               "interrupt_mailbox_mgmt_to_user_00"
+            ],
+            "offset" : "0x0000000001F00000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x1",
+            "range" : "0x0000000000010000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:mailbox:1.0"
+         },
+         "ep_msix_mgmt_00" : {
+            "interrupt_mapping" : {
+               "interrupt_aggregated_mgmt_00" : [
+                  "1",
+                  "1"
+               ],
+               "interrupt_mailbox_user_to_mgmt_00" : [
+                  "0",
+                  "0"
+               ]
+            },
+            "offset" : "0x0000000000000000",
+            "pcie_base_address_register" : "0x2",
+            "pcie_physical_function" : "0x0",
+            "range" : "0x0000000000040000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:msix:1.0"
+         },
+         "ep_p2p_00" : {
+            "offset" : "0x0000000000000000",
+            "pcie_base_address_register" : "0x4",
+            "pcie_physical_function" : "0x1",
+            "range" : "0x0000000200200000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:p2p:1.0"
+         },
+         "ep_pcie_link_mon_00" : {
+            "offset" : "0x0000000001F05000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x0",
+            "range" : "0x0000000000001000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:gpio_pcie_link_mon:1.0"
+         },
+         "ep_platform_info_mgmt_00" : {
+            "offset" : "0x0000000001F09000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x0",
+            "range" : "0x0000000000001000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:platform_info:1.0"
+         },
+         "ep_platform_info_user_00" : {
+            "offset" : "0x0000000001F11000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x1",
+            "range" : "0x0000000000001000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:platform_info:1.0"
+         },
+         "ep_pr_isolate_ulp_00" : {
+            "offset" : "0x0000000000041000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x0",
+            "range" : "0x0000000000001000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:pr_isolate:1.0"
+         },
+         "ep_remap_data_c2h_00" : {
+            "offset" : "0x0000000000081000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x1",
+            "range" : "0x0000000000001000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:shell_util_addr_remap:1.0"
+         },
+         "ep_remap_p2p_00" : {
+            "offset" : "0x0000000000080000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x1",
+            "range" : "0x0000000000001000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:shell_util_addr_remap:1.0"
+         },
+         "ep_uuid_rom_blp_00" : {
+            "offset" : "0x0000000001F04000",
+            "pcie_base_address_register" : "0x0",
+            "pcie_physical_function" : "0x0",
+            "range" : "0x0000000000001000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:uuid_rom:1.0"
+         },
+         "ep_xdma_00" : {
+            "interrupt_mapping" : {
+               "interrupt_cu_bank_00" : [
+                  "9",
+                  "9"
+               ],
+               "interrupt_cu_bank_01" : [
+                  "10",
+                  "10"
+               ],
+               "interrupt_cu_bank_02" : [
+                  "11",
+                  "11"
+               ],
+               "interrupt_cu_bank_03" : [
+                  "12",
+                  "12"
+               ],
+               "interrupt_m2m_00" : [
+                  "13",
+                  "13"
+               ],
+               "interrupt_mailbox_mgmt_to_user_00" : [
+                  "8",
+                  "8"
+               ]
+            },
+            "offset" : "0x0000000000000000",
+            "pcie_base_address_register" : "0x2",
+            "pcie_physical_function" : "0x1",
+            "range" : "0x0000000000040000",
+            "register_abstraction_name" : "xilinx.com:reg_abs:xdma:1.0"
+         }
+      },
+      "interfaces" : [
+         {
+            "interface_uuid" : "16e2362f82d2feab35529da27134b76d"
+         }
+      ],
+      "logic_uuid" : "4465409525b4c06aec6d0b479d3febe8",
+      "schema_version" : {
+         "major" : "0x1",
+         "minor" : "0x0"
+      }
+   }
+}

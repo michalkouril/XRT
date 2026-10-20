@@ -41,6 +41,8 @@ dllExt()
 {
 #ifdef _WIN32
   static std::filesystem::path sDllExt(".dll");
+#elif defined(__APPLE__)
+  static std::filesystem::path sDllExt(".2.dylib");
 #else
   static std::filesystem::path sDllExt(".so.2");
 #endif

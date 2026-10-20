@@ -29,7 +29,7 @@
 # endif
 #endif
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__APPLE__)
 # ifdef XRT_XOCL_SOURCE
 #  define XRT_XOCL_EXPORT __attribute__ ((visibility("default")))
 # else

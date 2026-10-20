@@ -124,7 +124,7 @@ register_user_functions(void* handle)
     reinterpret_cast<nsType>(xrt_core::dlsym(handle, "user_event_time_ns_cb"));
 }
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__APPLE__)
 __attribute__((unused))
 #endif
 static void

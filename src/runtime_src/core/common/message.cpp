@@ -20,6 +20,13 @@
 #include <map>
 #include <mutex>
 #include <thread>
+#ifdef __APPLE__
+# include <mach-o/dyld.h>
+# include <limits.h>
+# include <sys/stat.h>
+# include <sys/types.h>
+#endif
+
 #ifdef __linux__
 # include <linux/limits.h>
 # include <sys/stat.h>
@@ -45,6 +52,12 @@ get_exe_path()
   char buf[PATH_MAX] = {0};
   auto len = ::readlink("/proc/self/exe", buf, PATH_MAX);
   return std::string(buf, (len>0) ? len : 0);
+#elif defined(__APPLE__)
+  char buf[PATH_MAX] = {0};
+  uint32_t size = sizeof(buf);
+  if (_NSGetExecutablePath(buf, &size) != 0)
+    return "";
+  return std::string(buf);
 #else
   return "";
 #endif

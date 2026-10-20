@@ -5,6 +5,8 @@
 
 #ifdef _WIN32
 # include "core/common/detail/windows/syslog.h"
+#elif defined(__APPLE__)
+# include "core/common/detail/darwin/syslog.h"
 #else
 # include "core/common/detail/linux/syslog.h"
 #endif

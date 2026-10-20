@@ -38,6 +38,10 @@
 #else
 # include <unistd.h> // SUDO check
 #endif
+#ifdef __APPLE__
+# include <arpa/inet.h>
+# define be32toh ntohl
+#endif
 
 #define ALIGN(x, a)     (((x) + ((a) - 1)) & ~((a) - 1))
 #define PALIGN(p, a)    ((char *)(ALIGN((unsigned long long)(p), (a))))

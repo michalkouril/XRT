@@ -25,7 +25,7 @@
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/tokenizer.hpp>
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__APPLE__)
 # include <pthread.h>
 # include <sched.h>
 #endif
@@ -34,7 +34,7 @@ namespace {
 
 namespace platform_specific {
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__APPLE__)
 
 static void
 debug_thread_policy(const std::string& str, int policy, int priority)
@@ -92,6 +92,13 @@ set_thread_policy(std::thread& thread)
   pthread_setschedparam(thread.native_handle(), policy, &sch);
 }
 
+#ifdef __APPLE__
+// macOS has no pthread_setaffinity_np; Runtime.cpu_affinity is ignored.
+static void
+set_cpu_affinity(std::thread&)
+{
+}
+#else
 static void
 set_cpu_affinity(std::thread& thread)
 {
@@ -132,6 +139,7 @@ set_cpu_affinity(std::thread& thread)
     throw std::runtime_error("error calling pthread_setaffinity_np");
 
 }
+#endif // __APPLE__
 
 #else
 

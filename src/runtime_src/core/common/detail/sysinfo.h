@@ -5,6 +5,8 @@
 
 #ifdef _WIN32
 # include "core/common/detail/windows/sysinfo.h"
+#elif defined(__APPLE__)
+# include "core/common/detail/darwin/sysinfo.h"
 #else
 # include "core/common/detail/linux/sysinfo.h"
 #endif

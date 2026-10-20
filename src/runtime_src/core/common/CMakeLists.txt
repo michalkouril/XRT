@@ -146,7 +146,11 @@ if (WIN32)
     )
 endif()
 
-if (NOT WIN32)
+if (APPLE)
+  # uuid_* and dl* live in libSystem on macOS; there is no librt
+  target_link_libraries(xrt_coreutil PRIVATE pthread)
+  target_link_libraries(xrt_coreutil_static INTERFACE pthread)
+elseif (NOT WIN32)
   # Additional link dependencies for xrt_coreutil
   # xrt_uuid.h depends on uuid
   target_link_libraries(xrt_coreutil PRIVATE pthread dl PUBLIC uuid)

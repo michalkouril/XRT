@@ -54,7 +54,11 @@ endif(HAS_PYTHON)
 if (pybind11_FOUND)
   INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
   pybind11_add_module(pyxrt src/pyxrt.cpp)
-  target_link_libraries(pyxrt PRIVATE xrt_coreutil uuid pthread)
+  if (APPLE)
+    target_link_libraries(pyxrt PRIVATE xrt_coreutil pthread)
+  else()
+    target_link_libraries(pyxrt PRIVATE xrt_coreutil uuid pthread)
+  endif()
 
   if (CMAKE_INSTALL_PREFIX STREQUAL "/usr"
       OR CMAKE_INSTALL_PREFIX STREQUAL "/usr/local")

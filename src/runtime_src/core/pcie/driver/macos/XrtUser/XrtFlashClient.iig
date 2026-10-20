@@ -1,0 +1,33 @@
+// SPDX-License-Identifier: Apache-2.0
+#ifndef XrtFlashClient_h
+#define XrtFlashClient_h
+
+#include <Availability.h>
+#include <DriverKit/IOUserClient.iig>
+
+// The user client for the boot flash, and the only route to the SPI selectors.
+//
+// It is a separate class from XrtUserClient for two reasons. First, access: its
+// personality in Info.plist sets IOUserClientEntitlements, so the kernel refuses
+// the open unless the caller is signed with XRT_DEXT_FLASH_ENTITLEMENT - these
+// selectors can erase the factory image, which needs JTAG to recover. Second,
+// exclusion: the SPI controller is stateful and a whole erase or program is a long
+// sequence of single register accesses, so only ONE connection may exist at a time.
+// The claim is taken in Start and dropped in Stop, which means it is released even
+// when the owning process is killed - the case a user-space destructor cannot cover.
+class XrtFlashClient : public IOUserClient
+{
+public:
+  virtual bool init() override;
+  virtual kern_return_t Start(IOService* provider) override;
+  virtual kern_return_t Stop(IOService* provider) override;
+  virtual void free() override;
+
+  virtual kern_return_t ExternalMethod(uint64_t selector,
+                                       IOUserClientMethodArguments* arguments,
+                                       const IOUserClientMethodDispatch* dispatch,
+                                       OSObject* target,
+                                       void* reference) override;
+};
+
+#endif

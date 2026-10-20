@@ -1,0 +1,176 @@
+// SPDX-License-Identifier: Apache-2.0
+// Phase 1 xrt_user dext: matches an Alveo user physical function and
+// exposes read-only PCI identity to user space. No BAR access yet.
+#ifndef XrtUser_h
+#define XrtUser_h
+
+#include <Availability.h>
+#include <DriverKit/IOService.iig>
+#include <DriverKit/IOInterruptDispatchSource.iig>
+
+class IOPCIDevice;
+class IOMemoryDescriptor;
+class OSData;
+
+class XrtUser : public IOService
+{
+public:
+  virtual bool init() override;
+  virtual kern_return_t Start(IOService* provider) override;
+  virtual kern_return_t Stop(IOService* provider) override;
+  virtual void free() override;
+  virtual kern_return_t NewUserClient(uint32_t type, IOUserClient** userClient) override;
+
+  // Phase 7: quiesce DMA before system sleep, restore and verify on wake.
+  virtual kern_return_t SetPowerState(uint32_t powerFlags) override;
+
+  // Called by XrtUserClient; one dword of PCI configuration space.
+  kern_return_t ConfigRead(uint64_t offset, uint32_t* value) LOCALONLY;
+
+  // Called by XrtUserClient; moves the CU register window to this xclbin's CUs.
+  kern_return_t SetCuWindow(uint64_t offset, uint64_t length) LOCALONLY;
+
+  // Called by XrtUserClient; the card addresses DMA and the allocator may use.
+  kern_return_t SetCardRange(uint64_t first, uint64_t limit) LOCALONLY;
+
+  // Called by XrtUserClient; brings the board controller up.
+  kern_return_t LoadCmc(const uint32_t* words, uint64_t count, void* result) LOCALONLY;
+
+  // Called by XrtUserClient; brings the scheduler MicroBlaze up and configures it.
+  kern_return_t ErtStart(const uint32_t* words, uint64_t count, void* result) LOCALONLY;
+
+  // Called by XrtUserClient; asks the board controller for its board info.
+  kern_return_t CmcBoardInfo(void* result, uint64_t size) LOCALONLY;
+
+  // Called by XrtUserClient; installs or reports this card's register map.
+  kern_return_t SetPlatform(const void* in, uint64_t size) LOCALONLY;
+  kern_return_t GetPlatform(void* out, uint64_t size) LOCALONLY;
+
+  // Called by XrtUserClient; fills struct xrt_dext_device_info.
+  kern_return_t CopyDeviceInfo(void* out, uint64_t size) LOCALONLY;
+
+  // Called by XrtUserClient; reads XRT_DEXT_ROM_SIZE bytes of feature ROM
+  // after checking the magic word.
+  kern_return_t ReadFeatureRom(void* out, uint64_t size) LOCALONLY;
+
+  // Called by XrtUserClient on the management function; programs the user
+  // partition through ICAP. See xrt_dext_abi.h for the sequence.
+  kern_return_t LoadBitstream(const uint32_t* words, uint64_t count, uint64_t flags,
+                              const uint32_t* target_mhz, const uint32_t* ulp_clk,
+                              uint32_t ucs, const uint32_t* freq_cnt, void* result) LOCALONLY;
+
+  // Called by XrtUserClient; measures a kernel clock, in MHz.
+  kern_return_t ClockMeasure(uint32_t index, uint32_t* mhz) LOCALONLY;
+
+  // Phase 4: one H2C then one C2H transfer through XDMA channel 0 and a
+  // compare, all inside the dext.
+  kern_return_t DmaSelfTest(uint64_t card_addr, uint64_t length, uint64_t seed,
+                            void* result) LOCALONLY;
+
+  // Build the XDMA descriptor ring and the DMA commands once, on first
+  // transfer, and keep them. Caller holds dma_lock.
+  kern_return_t DmaSetup() LOCALONLY;
+  // One AXI Quad SPI transaction against the boot flash. The driver owns the
+  // register access; the flash command set lives in user space.
+  kern_return_t SpiTransfer(uint32_t slave, const void* tx, uint32_t tx_len,
+                            void* rx, uint32_t rx_cap, void* out) LOCALONLY;
+  // One 32-bit access to one AXI Quad SPI register, bounded to the flash block.
+  // Lets user space drive the controller directly; see XRT_DEXT_SPI_REG.
+  kern_return_t SpiReg(uint32_t reg, uint32_t value, bool write,
+                       uint32_t* out) LOCALONLY;
+  // Exclusive ownership of the flash controller, one connection at a time.
+  // Claimed when an XrtFlashClient starts and released when it stops - including
+  // when its process is killed, which a user-space teardown cannot cover. The
+  // release also disables the SPI core, because it holds STARTUPE3.
+  kern_return_t FlashClaim(IOService* owner) LOCALONLY;
+  void FlashRelease(IOService* owner) LOCALONLY;
+  // Read back the TX-stream shadow's tally of the flash commands it decoded.
+  kern_return_t SpiRegAudit(void* out, uint64_t size, bool reset) LOCALONLY;
+  // Choose what the shadow does with what it decodes: XRT_SPI_GUARD_*.
+  kern_return_t SpiRegMode(uint32_t mode, uint32_t* was) LOCALONLY;
+  // A reusable bounce buffer for transfers too small to arrive as a memory
+  // descriptor. Acquire holds a lock until Release, so the buffer is shared
+  // safely between connections without allocating one per transfer.
+  kern_return_t BounceAcquire(uint64_t length, IOMemoryDescriptor** md, uint64_t* va) LOCALONLY;
+  void BounceRelease() LOCALONLY;
+
+  // Phase 4: DMA between a host memory descriptor and card memory through
+  // XDMA channel 0. engine_status returns the last engine status seen.
+  kern_return_t DmaTransfer(IOMemoryDescriptor* host, uint64_t host_offset, uint64_t length,
+                            uint64_t card_addr, bool to_card, uint32_t* engine_status) LOCALONLY;
+
+  // Phase 5: write consecutive 32-bit registers inside the CU window.
+  // offset may carry XRT_CU_WRITE_NO_MAP.
+  kern_return_t CuWrite(uint64_t offset, const uint32_t* values, uint64_t count) LOCALONLY;
+
+  // One call per command: write a CU's argument registers and then its
+  // ap_start bit, through the dext's own mapping of the CU window.
+  // ctrl returns the control register as it was read under the lock, so the
+  // caller needs no MMIO read of its own.
+  kern_return_t CuExec(uint64_t cu_base, uint64_t arg_offset,
+                       const uint32_t* values, uint64_t count, uint32_t* ctrl) LOCALONLY;
+
+  // Map the user partition's CU window into the dext once, so register
+  // writes are stores rather than calls into the kernel.
+  void MapCuWindow() LOCALONLY;
+
+  // Keep / return raw xclbin sections of the loaded xclbin.
+  kern_return_t SetSection(uint32_t slot, const void* data, uint64_t size) LOCALONLY;
+  OSData* CopySection(uint32_t slot) LOCALONLY;
+
+  // Phase 7: device memory allocator shared by all processes. owner is the
+  // user client that made the allocation.
+  kern_return_t MemAlloc(uint64_t bank_base, uint64_t bank_size, uint64_t size,
+                         void* owner, uint64_t* addr) LOCALONLY;
+  kern_return_t MemFree(uint64_t addr, void* owner) LOCALONLY;
+  void MemFreeOwner(void* owner) LOCALONLY;
+  void MemStat(uint64_t bank_base, uint64_t bank_size, uint64_t* used, uint64_t* count) LOCALONLY;
+
+  // CU contexts, as xocl keeps them per client: an exclusive context excludes
+  // every other connection, a shared one excludes only exclusive ones. Held
+  // by the calling user client and dropped when it closes. Without these two
+  // processes could drive the same CU, and the shim's scheduler is per
+  // process so nothing else would stop them.
+  kern_return_t CuCtxOpen(uint32_t cu, uint32_t shared, uint64_t base, void* owner) LOCALONLY;
+
+  // Page offset in BAR0 to map read-write for owner's exclusive context on cu,
+  // or an error if it may not have one.
+  kern_return_t CuRwPage(uint32_t cu, void* owner, uint64_t* offset) LOCALONLY;
+  kern_return_t CuCtxClose(uint32_t cu, void* owner) LOCALONLY;
+  void CuCtxCloseOwner(void* owner) LOCALONLY;
+
+  // Keep the user function off the partition while the management function
+  // reprograms or resets it. Held by one user client at a time and dropped
+  // if that client goes away, so a process that dies mid-download cannot
+  // leave the card unusable.
+  kern_return_t PartitionHold(void* owner) LOCALONLY;
+  kern_return_t PartitionRelease(void* owner) LOCALONLY;
+  void PartitionReleaseOwner(void* owner) LOCALONLY;
+
+  // Phase 7: PCIe hot reset of the card from the management function, then
+  // firewall recovery (xclmgmt_hot_reset for XDMA 5.x shells).
+  kern_return_t HotReset(void* result) LOCALONLY;
+
+  // Remember / report the UUID of the xclbin in the user partition.
+  void SetXclbinUuid(const uint8_t* uuid) LOCALONLY;
+  void CopyXclbinUuid(uint8_t* uuid) LOCALONLY;
+
+  // Stage 1 interrupts: MSI-X vectors 0-3 serve XDMA H2C0, H2C1, C2H0, C2H1
+  // (libxdma's mapping). The handler runs on its own queue and wakes the
+  // thread waiting in DmaTransfer.
+  virtual void DmaInterrupt(OSAction* action, uint64_t count, uint64_t time)
+    TYPE(IOInterruptDispatchSource::InterruptOccurred) QUEUENAME(Interrupt);
+  void SetupInterrupts() LOCALONLY;
+  // Switch DMA completion between interrupt and polling (for comparison).
+  kern_return_t SetDmaMode(uint64_t mode, uint64_t* now) LOCALONLY;
+  void TeardownInterrupts() LOCALONLY;
+
+  // Called by XrtUserClient; memory descriptor for one BAR.
+  kern_return_t CopyBarMemory(uint32_t bar, IOMemoryDescriptor** memory) LOCALONLY;
+
+  // Called by XrtUserClient; a subrange of BAR0 covering one CU's register
+  // page, for a client that holds that CU exclusively.
+  kern_return_t CopyCuPageMemory(uint32_t cu, void* owner, IOMemoryDescriptor** memory) LOCALONLY;
+};
+
+#endif
