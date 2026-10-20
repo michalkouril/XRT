@@ -12,7 +12,19 @@ targets:
     type: driver-extension
     platform: macOS
     sources:
+      # A directory glob: a new source in XrtUser/ needs no registration here.
+      # cx5/ is excluded on purpose - it claims the Innova-2's ConnectX-5 and
+      # displaces Apple's AppleEthernetMLX5, so it is opt-in. build.sh adds it
+      # back, into a generated copy of this spec, only when XRT_MACOS_CX5=1.
       - path: XrtUser
+        excludes:
+          - "cx5/**"
+          # editor and hand-made backups: a .cpp.bak is not compiled, but the
+          # glob does copy it into the dext bundle as a resource, so the driver
+          # ends up shipping copies of its own source.
+          - "*.pre_*"
+          - "*.bak"
+          - "*.orig"
     settings:
       base:
         PRODUCT_NAME: org.xrtmac.XrtUser
