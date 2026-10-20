@@ -144,8 +144,32 @@ enum xrt_dext_selector {
                                   // what the TX-stream shadow does with what it
                                   // decodes. scalar in: XRT_SPI_GUARD_*; scalar
                                   // out: the mode in force before the call.
+  XRT_DEXT_REG_WRITE       = 36,  // mgmt only, Innova-2 shells only. One
+                                  // 32-bit write to the management function's
+                                  // BAR0, then a read back. scalar in: BAR0
+                                  // offset, value; scalar out: the value read
+                                  // back. Refused unless the feature ROM's VBNV
+                                  // starts with XRT_DEXT_REG_WRITE_VBNV_PREFIX,
+                                  // the offset is 4-byte aligned and the dword
+                                  // lies wholly inside one of the
+                                  // XRT_DEXT_REG_WRITE_WIN* windows below.
+                                  // Added without an ABI bump: an older dext
+                                  // answers kIOReturnUnsupported - and so does
+                                  // a generic XRT build, which leaves the
+                                  // implementation out (build.sh's
+                                  // XRT_MACOS_INNOVA2). This number stays
+                                  // reserved in every configuration: selector
+                                  // numbering must not depend on a build flag.
   XRT_DEXT_SELECTOR_COUNT
 };
+
+// What XRT_DEXT_REG_WRITE can reach: two 4 KiB windows of the management
+// function's BAR0 on an Innova-2 shell, and nothing else.
+#define XRT_DEXT_REG_WRITE_VBNV_PREFIX "innova2_"
+#define XRT_DEXT_REG_WRITE_WIN0_BASE   0x32000u
+#define XRT_DEXT_REG_WRITE_WIN0_SIZE   0x1000u
+#define XRT_DEXT_REG_WRITE_WIN1_BASE   0x36000u
+#define XRT_DEXT_REG_WRITE_WIN1_SIZE   0x1000u
 
 // PCI configuration space a caller may read through XRT_DEXT_CFG_READ: the
 // whole extended space, which is where the vendor capability that locates a

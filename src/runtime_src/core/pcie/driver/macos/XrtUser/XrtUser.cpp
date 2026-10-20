@@ -23,6 +23,28 @@
 
 #define LOG(fmt, ...) os_log(OS_LOG_DEFAULT, "xrt_user: " fmt, ##__VA_ARGS__)
 
+// Which of the three build configurations this binary is. build.sh defines both
+// flags for every build; these defaults make a compile outside build.sh the
+// generic driver rather than silently the widest one. Defined here, above every
+// use, rather than beside each one: an #if on an undefined macro quietly reads
+// as 0, so a fallback that sits below its first use works by accident.
+//
+//   XRT_MACOS_ENABLE_INNOVA2   XRT_DEXT_REG_WRITE, two FPGA shell registers
+//   XRT_MACOS_ENABLE_CX5       claims the ConnectX-5, displacing Apple's driver
+#ifndef XRT_MACOS_ENABLE_INNOVA2
+#define XRT_MACOS_ENABLE_INNOVA2 0
+#endif
+#ifndef XRT_MACOS_ENABLE_CX5
+#define XRT_MACOS_ENABLE_CX5 0
+#endif
+#if XRT_MACOS_ENABLE_CX5
+#define XRT_BUILD_CONFIG "cx5 (claims the ConnectX-5)"
+#elif XRT_MACOS_ENABLE_INNOVA2
+#define XRT_BUILD_CONFIG "innova2"
+#else
+#define XRT_BUILD_CONFIG "generic"
+#endif
+
 static constexpr uint32_t kXdmaEngines = 4;       // H2C0, H2C1, C2H0, C2H1
 static constexpr uint64_t kDmaDescBytes = 16384;  // one page of XDMA descriptors
 // DmaTransfer stage profile: how many transfers between log lines.
@@ -215,6 +237,8 @@ IMPL(XrtUser, Start)
   kern_return_t ret = Start(provider, SUPERDISPATCH);
   if (ret != kIOReturnSuccess)
     return ret;
+
+  LOG("build config: " XRT_BUILD_CONFIG);
 
   ivars->pci = OSDynamicCast(IOPCIDevice, provider);
   if (!ivars->pci) {
@@ -597,16 +621,81 @@ XrtUser::SetCuWindow(uint64_t offset, uint64_t length)
   return kIOReturnSuccess;
 }
 
-// The card addresses DMA and the allocator may touch, from the loaded xclbin's
-// memory topology. This is a backstop against a caller naming an address that
-// is not memory at all, so it may only shrink to, or move onto, real banks -
-// and not while any buffer is outstanding, because those live inside it.
-// Bring the board controller up. Mirrors xocl subdev/xmc.c load_xmc(): hold the
-// reset, copy the image into the controller's RAM, release the reset, wait for
-// the register map to come alive.
+// One 32-bit write to the management function's BAR0, for an Innova-2 shell's
+// own control registers. Everything about the target is checked here, not in
+// user space: the function, the shell (by the feature ROM's VBNV), the
+// alignment and the window. Anything else is refused before the BAR is touched.
 //
-// Nothing here is written to flash. The controller's image is loaded from the
-// host on every boot, so a failed load costs a reset, not the card.
+// Innova-2 specific, so a generic XRT build leaves it out: build.sh defines
+// XRT_MACOS_ENABLE_INNOVA2=0 by default and the method below then refuses
+// without ever looking at a BAR. The selector number stays reserved in
+// xrt_dext_abi.h either way - ABI numbering must not depend on a build flag.
+#if XRT_MACOS_ENABLE_INNOVA2
+static bool
+reg_write_in_window(uint64_t offset)
+{
+  if (offset & 3)
+    return false;
+  const uint64_t end = offset + 4;
+  if (offset >= XRT_DEXT_REG_WRITE_WIN0_BASE &&
+      end <= XRT_DEXT_REG_WRITE_WIN0_BASE + XRT_DEXT_REG_WRITE_WIN0_SIZE)
+    return true;
+  if (offset >= XRT_DEXT_REG_WRITE_WIN1_BASE &&
+      end <= XRT_DEXT_REG_WRITE_WIN1_BASE + XRT_DEXT_REG_WRITE_WIN1_SIZE)
+    return true;
+  return false;
+}
+#endif
+
+kern_return_t
+XrtUser::RegWrite(uint64_t offset, uint32_t value, uint32_t* readback)
+{
+#if !XRT_MACOS_ENABLE_INNOVA2
+  (void)offset; (void)value;
+  if (readback)
+    *readback = 0;
+  return kIOReturnUnsupported;      // not an Innova-2 build
+#else
+  if (!readback)
+    return kIOReturnBadArgument;
+  *readback = 0;
+  auto pci = ivars->pci;
+  if (!pci)
+    return kIOReturnNoDevice;
+  if (ivars->asleep)
+    return kIOReturnOffline;
+  if (!reg_write_in_window(offset))
+    return kIOReturnBadArgument;
+
+  uint8_t bus = 0, dev = 0, func = 0;
+  pci->GetBusDeviceFunction(&bus, &dev, &func);
+  if (func != 0)
+    return kIOReturnNotPermitted;      // management function only
+
+  // FeatureRomHeader (xclfeatures.h): VBNVName is bytes 88..151.
+  uint8_t rom[XRT_DEXT_ROM_SIZE] = {};
+  if (ReadFeatureRom(rom, sizeof(rom)) != kIOReturnSuccess)
+    return kIOReturnNotPermitted;
+  const char prefix[] = XRT_DEXT_REG_WRITE_VBNV_PREFIX;
+  if (memcmp(rom + 88, prefix, sizeof(prefix) - 1) != 0) {
+    LOG("reg write refused: shell is not an Innova-2 shell");
+    return kIOReturnNotPermitted;
+  }
+
+  uint8_t bar = 0, type = 0;
+  uint64_t size = 0;
+  if (pci->GetBARInfo(0, &bar, &size, &type) != kIOReturnSuccess || offset + 4 > size)
+    return kIOReturnNoResources;
+
+  pci->MemoryWrite32(bar, static_cast<uint32_t>(offset), value);
+  uint32_t v = 0;
+  pci->MemoryRead32(bar, static_cast<uint32_t>(offset), &v);
+  *readback = v;
+  LOG("reg write BAR0+0x%llx = 0x%08x (read back 0x%08x)", offset, value, v);
+  return kIOReturnSuccess;
+#endif
+}
+
 // Measure a kernel clock with the counter the loaded xclbin brought with it.
 // This is the frequency the hardware is actually running at, as opposed to the
 // one the download asked the wizard for.
@@ -898,6 +987,12 @@ XrtUser::ErtStart(const uint32_t* words, uint64_t count, void* out)
   return res->status = kIOReturnSuccess;
 }
 
+// Bring the board controller up. Mirrors xocl subdev/xmc.c load_xmc(): hold the
+// reset, copy the image into the controller's RAM, release the reset, wait for
+// the register map to come alive.
+//
+// Nothing here is written to flash. The controller's image is loaded from the
+// host on every boot, so a failed load costs a reset, not the card.
 kern_return_t
 XrtUser::LoadCmc(const uint32_t* words, uint64_t count, void* out)
 {
@@ -1011,6 +1106,10 @@ XrtUser::LoadCmc(const uint32_t* words, uint64_t count, void* out)
   return res->status = kIOReturnSuccess;
 }
 
+// The card addresses DMA and the allocator may touch, from the loaded xclbin's
+// memory topology. This is a backstop against a caller naming an address that
+// is not memory at all, so it may only shrink to, or move onto, real banks -
+// and not while any buffer is outstanding, because those live inside it.
 kern_return_t
 XrtUser::SetCardRange(uint64_t first, uint64_t limit)
 {
