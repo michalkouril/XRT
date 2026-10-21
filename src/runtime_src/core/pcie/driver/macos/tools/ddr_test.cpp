@@ -4,12 +4,16 @@
 //
 //   ddr_test <xclbin> [bytes ...]        default sizes 4 KiB, 64 KiB, 1 MiB, 4 MiB
 //
-// A bank that does not hold data and a transfer that never lands both "fail",
-// and only the data tells them apart. So every mismatching run reports the
-// first wrong word and how many of the wrong words read back as zero.
+// Written for the Innova-2 rbdm shell, whose DDR gate (see ddr_mode) answers a
+// fenced read with 0xBADCA1B0 instead of hanging the AXI master. That filler is
+// the point of this tool: a fenced bank and a broken bank both "fail", and only
+// the data tells them apart. So every mismatching run reports how many words
+// came back as the fence filler, and the first word that was neither right nor
+// filler.
 //
 // Each size runs in its own scope, so every buffer is freed before the next is
-// allocated and each one starts at the bank base.
+// allocated and each one starts at the bank base. That matters in the shell's
+// emulated-DDR mode, where only the bottom 1 MB of bank 0 is real storage.
 #include "xrt/xrt_device.h"
 #include "xrt/xrt_bo.h"
 #include "xrt/experimental/xrt_xclbin.h"
@@ -20,6 +24,9 @@
 #include <cstring>
 #include <string>
 #include <vector>
+
+// What the rbdm shell's fence returns for a read it will not pass through.
+static const uint32_t FENCE_FILLER = 0xBADCA1B0u;
 
 static int
 one_size(xrt::device& device, int bank, size_t size)
@@ -44,14 +51,16 @@ one_size(xrt::device& device, int bank, size_t size)
     bo.sync(XCL_BO_SYNC_BO_FROM_DEVICE, size, 0);
     auto t2 = std::chrono::steady_clock::now();
 
-    size_t bad = 0, zero = 0, first_bad = 0;
+    size_t bad = 0, filler = 0, zero = 0, first_bad = 0;
     for (size_t i = 0; i < n; ++i) {
       if (p[i] == ref[i])
         continue;
       if (!bad)
         first_bad = i;
       ++bad;
-      if (p[i] == 0)
+      if (p[i] == FENCE_FILLER)
+        ++filler;
+      else if (p[i] == 0)
         ++zero;
     }
     auto mbps = [&](auto a, auto b) {
@@ -67,8 +76,8 @@ one_size(xrt::device& device, int bank, size_t size)
     std::printf("%zu/%zu words wrong\n", bad, n);
     std::printf("             first at word %zu: wrote 0x%08x read 0x%08x\n",
                 first_bad, ref[first_bad], p[first_bad]);
-    std::printf("             of the wrong words: %zu read 0, %zu other\n",
-                zero, bad - zero);
+    std::printf("             of the wrong words: %zu read 0x%08x (fenced), %zu read 0, %zu other\n",
+                filler, FENCE_FILLER, zero, bad - filler - zero);
     return 1;
   }
   catch (const std::exception& e) {

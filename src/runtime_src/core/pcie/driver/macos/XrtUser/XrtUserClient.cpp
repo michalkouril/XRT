@@ -130,6 +130,34 @@ clock_measure(OSObject* target, void*, IOUserClientMethodArguments* args)
   return kIOReturnSuccess;
 }
 
+// Management function only, bounded to two Innova-2 windows; the driver
+// checks the function, the shell and the offset. Left out of a generic XRT
+// build, which makes selector 36 answer kIOReturnUnsupported through the null
+// check in ExternalMethod below - the same answer an older dext gives.
+#ifndef XRT_MACOS_ENABLE_INNOVA2
+#define XRT_MACOS_ENABLE_INNOVA2 0
+#endif
+
+#if XRT_MACOS_ENABLE_INNOVA2
+static kern_return_t
+reg_write(OSObject* target, void*, IOUserClientMethodArguments* args)
+{
+  auto self = OSDynamicCast(XrtUserClient, target);
+  auto driver = self ? OSDynamicCast(XrtUser, self->GetProvider()) : nullptr;
+  if (!driver)
+    return kIOReturnNoDevice;
+  uint32_t readback = 0;
+  kern_return_t ret = driver->RegWrite(args->scalarInput[0],
+                                       static_cast<uint32_t>(args->scalarInput[1]),
+                                       &readback);
+  if (ret != kIOReturnSuccess)
+    return ret;
+  args->scalarOutput[0] = readback;
+  args->scalarOutputCount = 1;
+  return kIOReturnSuccess;
+}
+#endif
+
 static kern_return_t
 cmc_board_info(OSObject* target, void*, IOUserClientMethodArguments* args)
 {
@@ -848,6 +876,16 @@ static const IOUserClientMethodDispatch s_methods[XRT_DEXT_SELECTOR_COUNT] = {
     .checkScalarOutputCount = 0,
     .checkStructureOutputSize = sizeof(xrt_dext_platform),
   },
+#if XRT_MACOS_ENABLE_INNOVA2
+  [XRT_DEXT_REG_WRITE] = {
+    .function = &reg_write,
+    .checkCompletionExists = false,
+    .checkScalarInputCount = 2,
+    .checkStructureInputSize = 0,
+    .checkScalarOutputCount = 1,
+    .checkStructureOutputSize = 0,
+  },
+#endif
 };
 
 kern_return_t

@@ -1,0 +1,43 @@
+// SPDX-License-Identifier: Apache-2.0
+//
+// The ConnectX-5 half of the Innova-2, claimed so its PCI configuration space can be
+// reached. Deliberately a SEPARATE class from XrtUser: XrtUser's Start assumes an Alveo
+// (feature ROM, XDMA, CU windows, an ICAP), none of which exists on a NIC, so pointing
+// it at a Mellanox device would be wrong in a dozen ways at once.
+//
+// Why claim it at all: the ConnectX decides which flash image the FPGA boots, and it
+// reports the verdict (admin/oper/status) through FPGA_CTRL, reachable over the PCI
+// Vendor-Specific Capability's ICMD gateway with no Mellanox driver involved. That is
+// the only route to "did the User image run, and was it accepted" (see HANDOFF 89-91).
+//
+// This DISPLACES com.apple.DriverKit-AppleEthernetMLX5, which matches every Mellanox
+// Ethernet-class device generically. It is a deliberate trade, taken with the owner's
+// say-so: on this machine the CX5 carries no traffic (the host runs on Wi-Fi), so the
+// cost is an unused NIC. On a host whose network runs over the card it would be
+// unacceptable.
+#ifndef XrtCx5_h
+#define XrtCx5_h
+
+#include <Availability.h>
+#include <DriverKit/IOService.iig>
+
+class IOPCIDevice;
+
+class XrtCx5 : public IOService
+{
+public:
+  virtual bool init() override;
+  virtual kern_return_t Start(IOService* provider) override;
+  virtual kern_return_t Stop(IOService* provider) override;
+  virtual void free() override;
+  virtual kern_return_t NewUserClient(uint32_t type, IOUserClient** userClient) override;
+
+  // One dword through the Vendor-Specific Capability gateway. Both take the semaphore,
+  // do the transfer, and release it; a caller never holds it across calls, so a caller
+  // that dies cannot wedge the device's gateway for everyone else.
+  kern_return_t GatewayRead(uint32_t space, uint32_t addr, uint32_t* value) LOCALONLY;
+  kern_return_t GatewayWrite(uint32_t space, uint32_t addr, uint32_t value) LOCALONLY;
+  kern_return_t CopyInfo(void* out, uint64_t size) LOCALONLY;
+};
+
+#endif

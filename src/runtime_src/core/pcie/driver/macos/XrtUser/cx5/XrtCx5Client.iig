@@ -1,0 +1,26 @@
+// SPDX-License-Identifier: Apache-2.0
+#ifndef XrtCx5Client_h
+#define XrtCx5Client_h
+
+#include <Availability.h>
+#include <DriverKit/IOUserClient.iig>
+
+// The user client for the ConnectX-5's configuration-space gateway. Kept separate from
+// the FPGA's clients: different device, different ABI (xrt_cx5_abi.h), and nothing here
+// should be reachable from a connection opened against the FPGA.
+class XrtCx5Client : public IOUserClient
+{
+public:
+  virtual bool init() override;
+  virtual kern_return_t Start(IOService* provider) override;
+  virtual kern_return_t Stop(IOService* provider) override;
+  virtual void free() override;
+
+  virtual kern_return_t ExternalMethod(uint64_t selector,
+                                       IOUserClientMethodArguments* arguments,
+                                       const IOUserClientMethodDispatch* dispatch,
+                                       OSObject* target,
+                                       void* reference) override;
+};
+
+#endif
