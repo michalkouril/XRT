@@ -920,7 +920,7 @@ load_xclbin(uint16_t bus, uint16_t dev, const axlf* top)
                             + ", the card reports " + std::to_string(rom->TimeSinceEpoch));
     // The uuid is compared only when the ROM actually carries one. Requiring it
     // unconditionally was stricter than xocl and rejected a legitimate xclbin on
-    // a shell whose ROM leaves the field zero - an Innova2 does.
+    // a shell whose ROM leaves the field zero.
     static const unsigned char zero_uuid[16] = {};
     if (std::memcmp(rom->uuid, zero_uuid, 16) != 0
         && std::memcmp(rom->uuid, top->m_header.m_interface_uuid, 16) != 0)

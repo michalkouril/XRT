@@ -5,7 +5,7 @@
 // absent reads back filler (0xffffffff / 0xdeadfa11 / 0xdec0de1c), and every
 // one of those has bit 0 set, so they are easy to mistake for a real status.
 //
-// usage: spi_peek [offset]      default 0x40000, the Innova2 shell's controller
+// usage: spi_peek [offset]      default 0x40000, where some shells put the controller
 #include <IOKit/IOKitLib.h>
 #include <cstdio>
 #include <cstdlib>

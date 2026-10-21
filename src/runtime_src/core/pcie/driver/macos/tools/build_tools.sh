@@ -12,11 +12,6 @@
 #
 # cl_hello is excluded: it needs the OpenCL ICD headers and is built separately.
 # pcidev_probe needs xbflash.qspi's pcidev_macos.cpp linked in.
-#
-# cx5/ is built only with XRT_MACOS_CX5=1, to match the dext: those tools talk to
-# the ConnectX-5 user client, which only exists in a dext built the same way.
-# Building them against a generic driver would produce binaries that can only
-# fail at IOServiceOpen.
 set -e
 here=$(cd "$(dirname "$0")" && pwd)
 dext=$(cd "$here/../XrtUser" && pwd)
@@ -42,11 +37,6 @@ LDFLAGS="-framework IOKit -framework CoreFoundation"
 XRTLIBS="-L/opt/xilinx/xrt/lib -lxrt_coreutil"
 
 SRCS="$here/*.cpp"
-if [ "${XRT_MACOS_CX5:-0}" = 1 ]; then
-  SRCS="$SRCS $here/cx5/*.cpp"
-else
-  echo "skip cx5/ tools (set XRT_MACOS_CX5=1 to build them)"
-fi
 
 ok=0; bad=0
 # shellcheck disable=SC2086
@@ -56,10 +46,6 @@ for src in $SRCS; do
     cl_hello) echo "skip $name (needs OpenCL ICD headers)"; continue ;;
     pcidev_probe) extra="$qspi/pcidev_macos.cpp"; extra_inc="-I$qspi" ;;
     *) extra=""; extra_inc="" ;;
-  esac
-  # the ConnectX tools include xrt_cx5_abi.h, which lives beside their sources
-  case $src in
-    "$here"/cx5/*) extra_inc="$extra_inc -I$dext/cx5" ;;
   esac
   # shellcheck disable=SC2086
   if clang++ $CXXFLAGS $extra_inc -o "$out/$name.new" "$src" $extra $LDFLAGS 2>"$out/$name.buildlog" \
