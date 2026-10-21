@@ -749,7 +749,14 @@ void
 device_macos::
 reset(query::reset_type& type) const
 {
-  if (type.get_key() != query::reset_key::hot)
+  // Both keys reach the same place. The CLI only ever sends `user` - that is
+  // what "xrt-smi reset --type user" means, and SubCmdReset refuses anything
+  // else before it gets here - while `hot` is what the key is called in
+  // query_reset.h. Accepting only `hot` made every xrt-smi reset fail with
+  // "only hot reset is supported on macOS", which reads like the card refusing
+  // rather than the one supported type being spelled differently.
+  const auto key = type.get_key();
+  if (key != query::reset_key::hot && key != query::reset_key::user)
     throw xrt_core::error(std::errc::not_supported, "only hot reset is supported on macOS");
   macos::hot_reset(m_fn.bus, m_fn.dev);
 }

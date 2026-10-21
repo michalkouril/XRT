@@ -9,7 +9,7 @@
   <key>CFBundleName</key><string>$(PRODUCT_NAME)</string>
   <key>CFBundlePackageType</key><string>DEXT</string>
   <key>CFBundleShortVersionString</key><string>0.1</string>
-  <key>CFBundleVersion</key><string>102</string>
+  <key>CFBundleVersion</key><string>103</string>
   <key>OSBundleUsageDescription</key><string>XRT driver for Alveo user and management functions (development).</string>
   <key>IOKitPersonalities</key>
   <dict>

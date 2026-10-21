@@ -1982,6 +1982,25 @@ XrtUser::BounceRelease()
     IOLockUnlock(ivars->bounce_lock);
 }
 
+// Drop the cached DMA mappings so DmaSetup() builds them again.
+//
+// The descriptor ring is prepared once and left prepared, so one IOVA serves
+// every transfer (DmaSetup). A PCIe reset ends the device's old address
+// translations, and the engine then fetches descriptors from an IOVA that no
+// longer resolves: it goes busy and stays busy with 0 descriptors done, which
+// looks exactly like a dead DMA target. The engine needs another reset to come
+// back, so one stale mapping costs every later transfer, not just the first.
+// Call this wherever a reset may have happened. dma_lock must be held.
+static void
+drop_dma_mappings(XrtUser_IVars* ivars)
+{
+  if (ivars->dma_desc_cmd)
+    ivars->dma_desc_cmd->CompleteDMA(kIODMACommandCompleteDMANoOptions);
+  OSSafeReleaseNULL(ivars->dma_desc_cmd);
+  OSSafeReleaseNULL(ivars->dma_host_cmd);
+  ivars->dma_desc_iova = 0;
+}
+
 kern_return_t
 XrtUser::DmaSetup()
 {
@@ -3447,6 +3466,7 @@ XrtUser::PartitionRelease(void* owner)
   ivars->xdma_bar_probed = false;
   ivars->irq_dead = false;
   ivars->irq_misses = 0;
+  drop_dma_mappings(ivars);
   IOLockUnlock(ivars->dma_lock);
   if (was_held)
     LOG("partition released");
